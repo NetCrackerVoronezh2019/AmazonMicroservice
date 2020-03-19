@@ -1,8 +1,10 @@
 package com.amazon.amazon.Services;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Base64;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,25 +22,39 @@ public class S3Service {
 	
 	 @Autowired
 	  private AmazonS3 s3client;
-	 
-	  @Value("${gkz.s3.bucket}")
-	  private String bucketName;
 	  
-	  public void uploadFile(String keyName, MultipartFile file) {
-		    try {
-		      ObjectMetadata metadata = new ObjectMetadata();
-		      metadata.setContentLength(file.getSize());
-		      s3client.putObject(bucketName, keyName, file.getInputStream(), metadata);
-		    } catch(IOException ioe) {  
-		    	System.out.println("EXCEPTION"+ioe.getMessage());
-		    } catch (AmazonServiceException ase) {
-		    	System.out.println("EXCEPTION"+ase.getMessage());
-		        } catch (AmazonClientException ace) {
-		        	System.out.println("EXCEPTION"+ace.getMessage());
-		        }
+	  public void upload(String content,String key,String bucketName)
+	  {
+		  byte[] bytes=org.apache.commons.codec.binary.Base64.decodeBase64((content.substring(content.indexOf(",")+1)).getBytes());
+		  ObjectMetadata metadata = new ObjectMetadata();
+	      metadata.setContentLength(bytes.length);
+		  metadata.setContentType("image/jpeg");
+		  InputStream inputStream = new ByteArrayInputStream(bytes);
+		  s3client.putObject(bucketName, key, inputStream, metadata);
+		  
 	  }
 	  
-	  public ByteArrayOutputStream downloadFile(String keyName) {
+	  public void update()
+	  {
+		 
+	  }
+	  
+	  
+	  public void DeleteFile(String key,String bucketName)
+	  {
+		  s3client.deleteObject(bucketName, key);
+	  }
+	  
+	  
+	  
+	  public void updateFile(String content,String key,String bucketName)
+	  {
+		  this.DeleteFile(key,bucketName);
+		  this.upload(content, key,bucketName);
+	  }
+	  
+	 
+	  public ByteArrayOutputStream downloadFile(String keyName,String bucketName) {
 		    try {
 		            S3Object s3object = s3client.getObject(new GetObjectRequest(bucketName, keyName));
 		            
