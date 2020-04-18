@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RestController;
 import com.amazon.amazon.Services.S3Service;
 
+import Models.GetFileModel;
 import Models.SendModel;
 import Models.UploadFileModel;
 import Models.UploadFilesModel;
@@ -39,7 +40,7 @@ public class AmazonController {
 	    public ResponseEntity<?> uploadAdvImage(@RequestBody UploadFileModel uploadFile) 
 	  	{
 	  		try {
-	  			s3Services.upload(uploadFile.getContent(), uploadFile.getKey(),this.advbucket);
+	  			s3Services.upload(uploadFile.getContent(), uploadFile.getKey(),this.advbucket,uploadFile.getContentType());
 	  			return new ResponseEntity<>(null,HttpStatus.OK);
 	  		}
 	  		catch(Exception ex)
@@ -53,7 +54,7 @@ public class AmazonController {
 	  	{
 	  		try {
 	  			for(UploadFileModel uploadFile:allFiles.allFiles)
-	  				s3Services.upload(uploadFile.getContent(), uploadFile.getKey(),this.documentbucket);
+	  				s3Services.upload(uploadFile.getContent(), uploadFile.getKey(),this.documentbucket,uploadFile.getContentType());
 	  			return new ResponseEntity<>(null,HttpStatus.OK);
 	  		}
 	  		catch(Exception ex)
@@ -68,7 +69,7 @@ public class AmazonController {
 	  	{
 	  		try {
 	  			for(UploadFileModel uploadFile:allFiles.allFiles)
-	  				s3Services.upload(uploadFile.getContent(), uploadFile.getKey(),this.advbucket);
+	  				s3Services.upload(uploadFile.getContent(), uploadFile.getKey(),this.advbucket,uploadFile.getContentType());
 	  			return new ResponseEntity<>(null,HttpStatus.OK);
 	  		}
 	  		catch(Exception ex)
@@ -78,11 +79,11 @@ public class AmazonController {
 	  	}
 	  	
 	  	
-	  	@PostMapping("uploaduserfile")
+	  	@PostMapping("uploadUserfile")
 	    public ResponseEntity<?> uploadUserImage(@RequestBody UploadFileModel uploadFile) 
 	  	{
 	  		try {
-	  			s3Services.upload(uploadFile.getContent(), uploadFile.getKey(),this.userbucket);
+	  			s3Services.upload(uploadFile.getContent(), uploadFile.getKey(),this.userbucket,uploadFile.getContentType());
 	  			return new ResponseEntity<>(null,HttpStatus.OK);
 	  		}
 	  		catch(Exception ex)
@@ -90,11 +91,11 @@ public class AmazonController {
 	  			return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
 	  		}
 	  	}
-	  	
 	  	
 	  	@GetMapping("/getuserimg/{key}")
 		  public ResponseEntity<byte[]> downloadUserFile(@PathVariable String key) {
 			 System.out.println("fdsdf");
+			 System.out.println(key);
 		    ByteArrayOutputStream downloadInputStream = s3Services.downloadFile(key,this.userbucket);
 		    SendModel s=new SendModel();
 		    return new ResponseEntity<>(downloadInputStream.toByteArray(),HttpStatus.OK);
@@ -104,10 +105,27 @@ public class AmazonController {
 	 
 	  @GetMapping("/getAdvImg/{key}")
 	  public ResponseEntity<byte[]> downloadFile(@PathVariable String key) {
-		 System.out.println("fdsdf");
-	    ByteArrayOutputStream downloadInputStream = s3Services.downloadFile(key,this.advbucket); 
+		  ByteArrayOutputStream downloadInputStream;
+		 try 
+		 {
+	   
+			 downloadInputStream = s3Services.downloadFile(key,this.advbucket); 
+		 }
+		 catch(Exception ex)
+		 {
+			 return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
+		 }
 	    return ResponseEntity.ok()
 	          .body(downloadInputStream.toByteArray());  
+	  }
+
+	  
+	  @GetMapping("/getCertFile/{key}")
+	  public ResponseEntity<byte[]> downloadCertFile(@PathVariable String key) {
+		 System.out.println("fdsdf");
+		 byte[] bytes = s3Services.downloadFile(key,this.documentbucket).toByteArray(); 
+	    return ResponseEntity.ok()
+	          .body(bytes);  
 	  }
 
 	 	 

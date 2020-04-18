@@ -5,7 +5,16 @@ public class UploadFileModel {
 	private String key;
 	private String content;
 	private String bucket;
+	private String contentType;
 	
+	
+	
+	public String getContentType() {
+		return contentType;
+	}
+	public void setContentType(String contentType) {
+		this.contentType = contentType;
+	}
 	public String getKey() {
 		return key;
 	}
