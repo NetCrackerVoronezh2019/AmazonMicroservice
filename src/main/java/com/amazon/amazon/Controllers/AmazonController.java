@@ -34,6 +34,12 @@ public class AmazonController {
 	  
 	  @Value("${gkz.s3.documentbucket}")
 	  private String documentbucket;
+
+	  @Value("${gkz.s3.groupbucket}")
+	  private String groupBucket;
+
+	  @Value("${gkz.s3.dialogbucket}")
+	  private String dialogBucket;
 	
 	  
 	  	@PostMapping("uploadFile")
@@ -94,7 +100,6 @@ public class AmazonController {
 	  	
 	  	@GetMapping("/getuserimg/{key}")
 		  public ResponseEntity<byte[]> downloadUserFile(@PathVariable String key) {
-			 System.out.println("fdsdf");
 			 System.out.println(key);
 		    ByteArrayOutputStream downloadInputStream = s3Services.downloadFile(key,this.userbucket);
 		    SendModel s=new SendModel();
@@ -127,6 +132,45 @@ public class AmazonController {
 	    return ResponseEntity.ok()
 	          .body(bytes);  
 	  }
+	  
+	  
+	  @PostMapping("groups/uploadFile")
+		public ResponseEntity<?> uploadGroupImage(@RequestBody UploadFileModel uploadFile)
+		{
+			try {
+				s3Services.upload(uploadFile.getContent(), uploadFile.getKey(),this.groupBucket,uploadFile.getContentType());
+				return new ResponseEntity<>(null,HttpStatus.OK);
+			}
+			catch(Exception ex)
+			{
+				return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
+			}
+		}
+
+		@GetMapping("/getGroupImg/{key}")
+		public ResponseEntity<byte[]> downloadGrouFile(@PathVariable String key) {
+			ByteArrayOutputStream downloadInputStream = s3Services.downloadFile(key,this.groupBucket);
+			return new ResponseEntity<>(downloadInputStream.toByteArray(),HttpStatus.OK);
+		}
+
+		@PostMapping("dialog/uploadFile")
+		public ResponseEntity<?> uploadDialogFile(@RequestBody UploadFileModel uploadFile)
+		{
+			try {
+				s3Services.upload(uploadFile.getContent(), uploadFile.getKey(),this.dialogBucket,uploadFile.getContentType());
+				return new ResponseEntity<>(null,HttpStatus.OK);
+			}
+			catch(Exception ex)
+			{
+				return new ResponseEntity<>(null,HttpStatus.BAD_REQUEST);
+			}
+		}
+
+		@GetMapping("/getDialogFile/{key}")
+		public ResponseEntity<byte[]> downloadialogFile(@PathVariable String key) {
+			ByteArrayOutputStream downloadInputStream = s3Services.downloadFile(key,this.dialogBucket);
+			return new ResponseEntity<>(downloadInputStream.toByteArray(),HttpStatus.OK);
+		}
 
 	 	 
 }
